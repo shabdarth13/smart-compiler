@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Compiler IDE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Header -->
+    <header>
+        <h1>⚡ Smart Compiler IDE</h1>
+        <div class="toolbar">
+            <button onclick="runCode()">▶ Run</button>
+            <button onclick="clearAll()">🧹 Clear</button>
+            <button onclick="loadSample()">📄 Sample Code</button>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main">
+
+        <!-- Code Editor -->
+        <div class="editor-section">
+            <div class="editor-header">Editor</div>
+            <textarea id="code" spellcheck="false"></textarea>
+        </div>
+
+        <!-- Output Section -->
+        <div class="output-section">
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="openTab('errors')">Errors</button>
+                <button class="tab" onclick="openTab('warnings')">Warnings</button>
+                <button class="tab" onclick="openTab('output')">Output</button>
+                <button class="tab" onclick="openTab('ast')">AST</button>
+                <button class="tab" onclick="openTab('symbols')">Symbols</button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div class="tab-content active" id="errors"></div>
+            <div class="tab-content" id="warnings"></div>
+            <div class="tab-content" id="output"></div>
+            <pre class="tab-content" id="ast"></pre>
+            <pre class="tab-content" id="symbols"></pre>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
