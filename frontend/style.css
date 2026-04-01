@@ -54,19 +54,14 @@ header h1 {
 .toolbar button:hover {
     background: #005f99;
 }
-
-/* ============================= */
 /* MAIN LAYOUT */
-/* ============================= */
 .main {
     display: flex;
     flex: 1;
     overflow: hidden;
 }
 
-/* ============================= */
 /* EDITOR */
-/* ============================= */
 .editor-section {
     flex: 1;
     display: flex;
@@ -93,10 +88,7 @@ textarea {
     resize: none;
     outline: none;
 }
-
-/* ============================= */
 /* OUTPUT SECTION */
-/* ============================= */
 .output-section {
     flex: 1;
     display: flex;
@@ -141,10 +133,7 @@ textarea {
 .tab-content.active {
     display: block;
 }
-
-/* ============================= */
 /* OUTPUT COLORS */
-/* ============================= */
 #errors {
     color: #ff6b6b;
 }
@@ -157,9 +146,7 @@ textarea {
     color: #26de81;
 }
 
-/* ============================= */
 /* SCROLLBAR */
-/* ============================= */
 ::-webkit-scrollbar {
     width: 8px;
 }

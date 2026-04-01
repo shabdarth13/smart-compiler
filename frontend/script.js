@@ -1,6 +1,3 @@
-// ==============================
-// DOM ELEMENTS
-// ==============================
 const elements = {
     code: document.getElementById("code"),
     errors: document.getElementById("errors"),
@@ -11,10 +8,6 @@ const elements = {
     tabs: document.querySelectorAll(".tab"),
     tabContents: document.querySelectorAll(".tab-content")
 };
-
-// ==============================
-// DEBOUNCE
-// ==============================
 function debounce(func, delay = 500) {
     let timeout;
     return (...args) => {
@@ -22,10 +15,6 @@ function debounce(func, delay = 500) {
         timeout = setTimeout(() => func(...args), delay);
     };
 }
-
-// ==============================
-// API CALL
-// ==============================
 async function apiCall(url, body) {
     try {
         const res = await fetch(url, {
@@ -42,10 +31,6 @@ async function apiCall(url, body) {
         console.error(err);
     }
 }
-
-// ==============================
-// REAL-TIME ANALYSIS
-// ==============================
 const analyzeCode = debounce(async () => {
     const data = await apiCall("/analyze", {
         code: elements.code.value
@@ -61,10 +46,6 @@ const analyzeCode = debounce(async () => {
 }, 500);
 
 elements.code.addEventListener("input", analyzeCode);
-
-// ==============================
-// RUN CODE
-// ==============================
 async function runCode() {
     clearOutputs();
 
@@ -90,10 +71,6 @@ async function runCode() {
 
     openTab("output");
 }
-
-// ==============================
-// UI HELPERS
-// ==============================
 function renderList(container, list) {
     if (!list || list.length === 0) {
         container.innerHTML = "✔ Empty";
@@ -105,10 +82,6 @@ function renderList(container, list) {
 function showError(message) {
     elements.errors.innerHTML = `<span style="color:red">${message}</span>`;
 }
-
-// ==============================
-// TAB SYSTEM
-// ==============================
 function openTab(id) {
     elements.tabContents.forEach(tab => tab.classList.remove("active"));
     elements.tabs.forEach(tab => tab.classList.remove("active"));
@@ -118,10 +91,6 @@ function openTab(id) {
     document.querySelector(`.tab[onclick="openTab('${id}')"]`)
         .classList.add("active");
 }
-
-// ==============================
-// UTIL FUNCTIONS
-// ==============================
 function clearAll() {
     elements.code.value = "";
     clearOutputs();

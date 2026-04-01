@@ -19,9 +19,7 @@ def home():
 def static_files(path):
     return send_from_directory('../frontend', path)
 
-# =========================
 # ANALYZE (LIVE CHECK)
-# =========================
 @app.route('/analyze', methods=['POST'])
 def analyze():
     try:
@@ -43,36 +41,31 @@ def analyze():
             "status": "error",
             "errors": [str(e)]
         })
-
-
-# =========================
-# RUN FULL COMPILER
-# =========================
 @app.route('/run', methods=['POST'])
 def run():
     try:
         code = request.json['code']
 
-        # 🔹 LEXER
+        # LEXER
         tokens = tokenize(code)
 
-        # 🔹 PARSER
+        # PARSER
         parser = Parser(tokens)
         ast = parser.parse()
 
-        # 🔹 SEMANTIC ANALYSIS
+        # SEMANTIC ANALYSIS
         symbols = semantic_analysis(ast)
 
-        # 🔹 SECURITY ANALYSIS
+        # SECURITY ANALYSIS
         warnings = security_check(ast)
 
-        # 🔹 OPTIMIZATION
+        # OPTIMIZATION
         optimized_ast = optimize(ast)
 
-        # 🔹 EXECUTION
+        # EXECUTION
         output = execute(optimized_ast)
 
-        # 🔹 AST VISUALIZATION (TREE)
+        # AST VISUALIZATION (TREE)
         ast_tree = visualize_ast(optimized_ast)
 
         return jsonify({
@@ -88,10 +81,5 @@ def run():
             "status": "error",
             "errors": [str(e)]
         })
-
-
-# =========================
-# MAIN
-# =========================
 if __name__ == '__main__':
     app.run(debug=True)
