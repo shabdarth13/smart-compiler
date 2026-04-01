@@ -1,3 +1,8 @@
+const BASE_URL = "http://127.0.0.1:5000";
+
+// ==============================
+// DOM ELEMENTS
+// ==============================
 const elements = {
     code: document.getElementById("code"),
     errors: document.getElementById("errors"),
@@ -8,6 +13,10 @@ const elements = {
     tabs: document.querySelectorAll(".tab"),
     tabContents: document.querySelectorAll(".tab-content")
 };
+
+// ==============================
+// DEBOUNCE
+// ==============================
 function debounce(func, delay = 500) {
     let timeout;
     return (...args) => {
@@ -15,9 +24,13 @@ function debounce(func, delay = 500) {
         timeout = setTimeout(() => func(...args), delay);
     };
 }
+
+// ==============================
+// API CALL
+// ==============================
 async function apiCall(url, body) {
     try {
-        const res = await fetch(url, {
+        const res = await fetch(BASE_URL + url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body)
@@ -27,10 +40,14 @@ async function apiCall(url, body) {
 
         return await res.json();
     } catch (err) {
-        showError("⚠ Network/Server error");
+        showError("⚠ Backend not running");
         console.error(err);
     }
 }
+
+// ==============================
+// REAL-TIME ANALYSIS
+// ==============================
 const analyzeCode = debounce(async () => {
     const data = await apiCall("/analyze", {
         code: elements.code.value
@@ -46,6 +63,10 @@ const analyzeCode = debounce(async () => {
 }, 500);
 
 elements.code.addEventListener("input", analyzeCode);
+
+// ==============================
+// RUN CODE
+// ==============================
 async function runCode() {
     clearOutputs();
 
@@ -64,13 +85,15 @@ async function runCode() {
     renderList(elements.warnings, data.warnings);
     renderList(elements.output, data.output);
 
-    // 🔥 TREE AST (not JSON)
-    elements.ast.innerText = data.ast;
-
+    elements.ast.innerText = data.ast; // TREE AST
     elements.symbols.innerText = JSON.stringify(data.symbols, null, 2);
 
     openTab("output");
 }
+
+// ==============================
+// UI HELPERS
+// ==============================
 function renderList(container, list) {
     if (!list || list.length === 0) {
         container.innerHTML = "✔ Empty";
@@ -82,6 +105,10 @@ function renderList(container, list) {
 function showError(message) {
     elements.errors.innerHTML = `<span style="color:red">${message}</span>`;
 }
+
+// ==============================
+// TAB SYSTEM
+// ==============================
 function openTab(id) {
     elements.tabContents.forEach(tab => tab.classList.remove("active"));
     elements.tabs.forEach(tab => tab.classList.remove("active"));
@@ -91,6 +118,10 @@ function openTab(id) {
     document.querySelector(`.tab[onclick="openTab('${id}')"]`)
         .classList.add("active");
 }
+
+// ==============================
+// UTIL
+// ==============================
 function clearAll() {
     elements.code.value = "";
     clearOutputs();
