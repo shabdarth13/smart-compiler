@@ -18,8 +18,6 @@ def home():
 @app.route('/<path:path>')
 def static_files(path):
     return send_from_directory('../frontend', path)
-
-# ANALYZE (LIVE CHECK)
 @app.route('/analyze', methods=['POST'])
 def analyze():
     try:
@@ -81,5 +79,6 @@ def run():
             "status": "error",
             "errors": [str(e)]
         })
+    
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
