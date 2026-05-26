@@ -12,8 +12,10 @@ const elements = {
     errorCount: document.getElementById("errorCount"),
     warningCount: document.getElementById("warningCount"),
     outputCount: document.getElementById("outputCount"),
-    statusText: document.getElementById("statusText")
+    statusText: document.getElementById("statusText"),
+    aiBotBox: document.getElementById("aiBotBox")
 };
+let lastRunData = null;
 
 function debounce(func, delay = 500) {
     let timeout;
@@ -107,6 +109,8 @@ async function runCode() {
     elements.outputCount.innerText = data.output ? data.output.length : 0;
     elements.errorCount.innerText = "0";
     elements.statusText.innerText = "Success";
+
+    lastRunData = data;
 
     drawAstTree(data.ast);
     renderSymbolTable(data.symbols);
@@ -482,3 +486,131 @@ function animateBackground() {
 }
 
 animateBackground();
+function explainCode() {
+    const code = elements.code.value.trim();
+
+    if (!code) {
+        elements.aiBotBox.innerHTML = "Write some code first, then run it.";
+        return;
+    }
+
+    if (!lastRunData) {
+        elements.aiBotBox.innerHTML = "Run the code first, then I can explain the actual execution.";
+        return;
+    }
+
+    const lines = code
+        .split("\n")
+        .map(line => line.trim())
+        .filter(line => line !== "");
+
+    let explanation = "";
+
+    explanation += `<b>Code Explanation:</b><br><br>`;
+
+    lines.forEach((line, index) => {
+        explanation += `<b>Line ${index + 1}:</b> `;
+
+        if (line.startsWith("let ")) {
+            const match = line.match(/let\s+([a-zA-Z_]\w*)\s*=\s*(.+)/);
+
+            if (match) {
+                const variable = match[1];
+                const expression = match[2];
+
+                explanation += `Creates variable <b>${variable}</b> and assigns it the result of <code>${expression}</code>.`;
+
+                if (lastRunData.symbols && variable in lastRunData.symbols) {
+                    explanation += ` Final value is <b>${lastRunData.symbols[variable]}</b>.`;
+                }
+            } else {
+                explanation += `This line declares a variable.`;
+            }
+        }
+
+        else if (line.startsWith("print")) {
+            const match = line.match(/print\s*\((.+)\)/);
+
+            if (match) {
+                explanation += `Prints the value of <code>${match[1]}</code> to the output window.`;
+            } else {
+                explanation += `Prints output.`;
+            }
+        }
+
+        else if (line.startsWith("if")) {
+            const match = line.match(/if\s*\((.+)\)/);
+
+            if (match) {
+                explanation += `Checks the condition <code>${match[1]}</code>. If it is true, the compiler executes the if-block. Otherwise, it executes the else-block.`;
+            } else {
+                explanation += `Starts a conditional block.`;
+            }
+        }
+
+        else if (line.startsWith("else")) {
+            explanation += `This block runs only when the if condition is false.`;
+        }
+
+        else if (line.startsWith("while")) {
+            const match = line.match(/while\s*\((.+)\)/);
+
+            if (match) {
+                explanation += `Repeats the loop while <code>${match[1]}</code> remains true.`;
+            } else {
+                explanation += `Starts a loop.`;
+            }
+        }
+
+        else if (line.includes("=")) {
+            const parts = line.split("=");
+
+            const variable = parts[0].trim();
+            const expression = parts.slice(1).join("=").trim();
+
+            explanation += `Updates variable <b>${variable}</b> using expression <code>${expression}</code>.`;
+
+            if (lastRunData.symbols && variable in lastRunData.symbols) {
+                explanation += ` Final value becomes <b>${lastRunData.symbols[variable]}</b>.`;
+            }
+        }
+
+        else if (line === "{" || line === "}") {
+            explanation += `Marks the start or end of a code block.`;
+        }
+
+        else {
+            explanation += `This line is part of the program structure.`;
+        }
+
+        explanation += `<br><br>`;
+    });
+
+    if (lastRunData.output && lastRunData.output.length > 0) {
+        explanation += `<b>Final Output:</b><br>`;
+        lastRunData.output.forEach(out => {
+            explanation += `• ${out}<br>`;
+        });
+        explanation += `<br>`;
+    }
+
+    if (lastRunData.symbols && Object.keys(lastRunData.symbols).length > 0) {
+        explanation += `<b>Final Symbol Table:</b><br>`;
+
+        Object.entries(lastRunData.symbols).forEach(([key, value]) => {
+            explanation += `• ${key} = ${value}<br>`;
+        });
+
+        explanation += `<br>`;
+    }
+
+    if (lastRunData.warnings && lastRunData.warnings.length > 0) {
+        explanation += `<b>Warnings:</b><br>`;
+
+        lastRunData.warnings.forEach(warning => {
+            explanation += `• ${warning}<br>`;
+        });
+    }
+
+    elements.aiBotBox.innerHTML = explanation;
+}

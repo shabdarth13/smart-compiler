@@ -12,24 +12,39 @@
 
 <div class="app">
 
-    <aside class="sidebar">
-        <div class="logo">
-            <div class="logo-icon">⚡</div>
+  <aside class="sidebar">
+    <div class="logo">
+        <div class="logo-icon">⚡</div>
+        <div>
+            <h2>Smart Compiler</h2>
+            <p>Mini Language IDE</p>
+        </div>
+    </div>
+
+    <div class="side-section">
+        <h3>Language Supports</h3>
+        <div class="tag">let</div>
+        <div class="tag">print()</div>
+        <div class="tag">if else</div>
+        <div class="tag">while</div>
+        <div class="tag">+ * / &lt; &gt;</div>
+    </div>
+
+    <div class="ai-bot">
+        <div class="ai-bot-header">
             <div>
-                <h2>Smart Compiler</h2>
-                <p>Mini Language IDE</p>
+                <h3>Code Explanation AI bot</h3>
+                <p>Compiler helper</p>
             </div>
         </div>
 
-        <div class="side-section">
-            <h3>Language Supports</h3>
-            <div class="tag">let</div>
-            <div class="tag">print()</div>
-            <div class="tag">if else</div>
-            <div class="tag">while</div>
-            <div class="tag">+ * / &lt; &gt;</div>
+        <div class="ai-bot-box" id="aiBotBox">
+            Run your code and I’ll explain what happened.
         </div>
-    </aside>
+
+        <button class="ai-btn" onclick="explainCode()">Explain Code</button>
+    </div>
+</aside>
 
     <main class="main-area">
 
