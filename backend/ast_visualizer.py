@@ -1,66 +1,152 @@
-def visualize_ast(node, indent=0):
-    space = "  " * indent
+def visualize_ast(ast):
+    nodes = []
+    edges = []
+    counter = {"id": 0}
 
-    # Handle list of statements
-    if isinstance(node, list):
-        result = ""
-        for n in node:
-            result += visualize_ast(n, indent)
-        return result
+    def new_node(label):
+        node_id = f"node{counter['id']}"
+        counter["id"] += 1
+        nodes.append({
+            "id": node_id,
+            "label": label
+        })
+        return node_id
 
-    # Assignment
-    if node.__class__.__name__ == "Assign":
-        return f"{space}Assign\n" + \
-               f"{space}  Var: {node.var}\n" + \
-               visualize_ast(node.value, indent + 1)
+    def visit(node, parent=None):
+        if isinstance(node, list):
+            root_id = new_node("Program")
 
-    # Number
-    elif node.__class__.__name__ == "Number":
-        return f"{space}Number({node.value})\n"
+            for stmt in node:
+                child_id = visit(stmt, root_id)
+                edges.append({
+                    "from": root_id,
+                    "to": child_id
+                })
 
-    # Variable
-    elif node.__class__.__name__ == "Variable":
-        return f"{space}Variable({node.name})\n"
+            return root_id
 
-    # Binary Operation
-    elif node.__class__.__name__ == "BinOp":
-        return f"{space}BinOp({node.op})\n" + \
-               visualize_ast(node.left, indent + 1) + \
-               visualize_ast(node.right, indent + 1)
+        node_type = node.__class__.__name__
 
-    # Print
-    elif node.__class__.__name__ == "Print":
-        return f"{space}Print\n" + \
-               visualize_ast(node.expr, indent + 1)
+        if node_type == "Assign":
+            assign_id = new_node("Assign")
 
-    # If-Else
-    elif node.__class__.__name__ == "IfElse":
-        result = f"{space}If\n"
+            var_id = new_node(f"Var: {node.var}")
+            edges.append({
+                "from": assign_id,
+                "to": var_id
+            })
 
-        result += f"{space}  Condition:\n"
-        result += visualize_ast(node.condition, indent + 2)
+            value_id = visit(node.value, assign_id)
+            edges.append({
+                "from": assign_id,
+                "to": value_id
+            })
 
-        result += f"{space}  Then:\n"
-        for stmt in node.if_body:
-            result += visualize_ast(stmt, indent + 2)
+            return assign_id
 
-        result += f"{space}  Else:\n"
-        for stmt in node.else_body:
-            result += visualize_ast(stmt, indent + 2)
+        elif node_type == "Number":
+            return new_node(f"Number: {node.value}")
 
-        return result
+        elif node_type == "Variable":
+            return new_node(f"Variable: {node.name}")
 
-    # While Loop
-    elif node.__class__.__name__ == "WhileLoop":
-        result = f"{space}While\n"
+        elif node_type == "BinOp":
+            op_id = new_node(f"BinOp: {node.op}")
 
-        result += f"{space}  Condition:\n"
-        result += visualize_ast(node.condition, indent + 2)
+            left_id = visit(node.left, op_id)
+            right_id = visit(node.right, op_id)
 
-        result += f"{space}  Body:\n"
-        for stmt in node.body:
-            result += visualize_ast(stmt, indent + 2)
+            edges.append({
+                "from": op_id,
+                "to": left_id
+            })
 
-        return result
+            edges.append({
+                "from": op_id,
+                "to": right_id
+            })
 
-    return f"{space}Unknown Node\n"
+            return op_id
+
+        elif node_type == "Print":
+            print_id = new_node("Print")
+            expr_id = visit(node.expr, print_id)
+
+            edges.append({
+                "from": print_id,
+                "to": expr_id
+            })
+
+            return print_id
+
+        elif node_type == "IfElse":
+            if_id = new_node("If-Else")
+
+            cond_id = visit(node.condition, if_id)
+            edges.append({
+                "from": if_id,
+                "to": cond_id,
+                "label": "condition"
+            })
+
+            then_id = new_node("Then")
+            edges.append({
+                "from": if_id,
+                "to": then_id
+            })
+
+            for stmt in node.if_body:
+                stmt_id = visit(stmt, then_id)
+                edges.append({
+                    "from": then_id,
+                    "to": stmt_id
+                })
+
+            else_id = new_node("Else")
+            edges.append({
+                "from": if_id,
+                "to": else_id
+            })
+
+            for stmt in node.else_body:
+                stmt_id = visit(stmt, else_id)
+                edges.append({
+                    "from": else_id,
+                    "to": stmt_id
+                })
+
+            return if_id
+
+        elif node_type == "WhileLoop":
+            while_id = new_node("While")
+
+            cond_id = visit(node.condition, while_id)
+            edges.append({
+                "from": while_id,
+                "to": cond_id,
+                "label": "condition"
+            })
+
+            body_id = new_node("Body")
+            edges.append({
+                "from": while_id,
+                "to": body_id
+            })
+
+            for stmt in node.body:
+                stmt_id = visit(stmt, body_id)
+                edges.append({
+                    "from": body_id,
+                    "to": stmt_id
+                })
+
+            return while_id
+
+        return new_node("Unknown")
+
+    visit(ast)
+
+    return {
+        "nodes": nodes,
+        "edges": edges
+    }

@@ -159,3 +159,18 @@ textarea {
 ::-webkit-scrollbar-thumb:hover {
     background: #777;
 }
+#ast {
+    overflow: auto;
+    background: #1e1e1e;
+}
+
+#astSvg {
+    min-width: 1600px;
+    min-height: 600px;
+    background: #1e1e1e;
+}
+
+#astSvg text {
+    font-family: Consolas, monospace;
+    pointer-events: none;
+}
