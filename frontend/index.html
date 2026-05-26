@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <canvas id="bgCanvas"></canvas>
+
 <div class="app">
 
     <aside class="sidebar">
@@ -67,6 +69,7 @@
 
             <div class="editor-panel">
                 <div class="panel-header">
+                    <span>source.smart</span>
                     <span class="live-dot">● Live Analyze</span>
                 </div>
 
@@ -90,7 +93,15 @@
                 <div class="tab-content" id="output"></div>
 
                 <div class="tab-content" id="ast">
-                    <svg id="astSvg"></svg>
+                    <div class="ast-toolbar">
+                        <button onclick="zoomIn()">＋</button>
+                        <button onclick="zoomOut()">－</button>
+                        <button onclick="resetZoom()">Reset</button>
+                    </div>
+
+                    <div id="astContainer">
+                        <svg id="astSvg"></svg>
+                    </div>
                 </div>
 
                 <div class="tab-content" id="symbols">

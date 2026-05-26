@@ -5,6 +5,7 @@ const elements = {
     warnings: document.getElementById("warnings"),
     output: document.getElementById("output"),
     astSvg: document.getElementById("astSvg"),
+    astContainer: document.getElementById("astContainer"),
     symbolTableBody: document.getElementById("symbolTableBody"),
     tabs: document.querySelectorAll(".tab"),
     tabContents: document.querySelectorAll(".tab-content"),
@@ -32,6 +33,7 @@ function updateLineNumbers() {
 }
 
 elements.code.addEventListener("input", updateLineNumbers);
+
 elements.code.addEventListener("scroll", () => {
     elements.lineNumbers.scrollTop = elements.code.scrollTop;
 });
@@ -112,9 +114,82 @@ async function runCode() {
     openTab("output");
 }
 
+let scale = 1;
+let panX = 0;
+let panY = 0;
+let isDragging = false;
+let startX = 0;
+let startY = 0;
+
+function updateAstTransform() {
+    elements.astSvg.style.transform =
+        `translate(${panX}px, ${panY}px) scale(${scale})`;
+}
+
+function zoomIn() {
+    scale = Math.min(3, scale + 0.1);
+    updateAstTransform();
+}
+
+function zoomOut() {
+    scale = Math.max(0.2, scale - 0.1);
+    updateAstTransform();
+}
+
+function resetZoom() {
+    scale = 1;
+    panX = 0;
+    panY = 0;
+    updateAstTransform();
+}
+
+elements.astContainer.addEventListener("wheel", (e) => {
+    e.preventDefault();
+
+    const rect = elements.astContainer.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const oldScale = scale;
+
+    if (e.deltaY < 0) {
+        scale = Math.min(3, scale + 0.1);
+    } else {
+        scale = Math.max(0.2, scale - 0.1);
+    }
+
+    const scaleRatio = scale / oldScale;
+
+    panX = mouseX - (mouseX - panX) * scaleRatio;
+    panY = mouseY - (mouseY - panY) * scaleRatio;
+
+    updateAstTransform();
+});
+
+elements.astContainer.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    startX = e.clientX - panX;
+    startY = e.clientY - panY;
+});
+
+window.addEventListener("mouseup", () => {
+    isDragging = false;
+});
+
+window.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+
+    panX = e.clientX - startX;
+    panY = e.clientY - startY;
+
+    updateAstTransform();
+});
+
 function drawAstTree(astData) {
     const svg = elements.astSvg;
     svg.innerHTML = "";
+
+    resetZoom();
 
     if (!astData || !astData.nodes || !astData.edges) return;
 
@@ -153,16 +228,16 @@ function drawAstTree(astData) {
     const nodeGap = 190;
 
     svg.setAttribute("width", width);
-    svg.setAttribute("height", levels.length * levelGap + 140);
+    svg.setAttribute("height", levels.length * levelGap + 160);
 
     levels.forEach((levelNodes, levelIndex) => {
         const totalWidth = (levelNodes.length - 1) * nodeGap;
-        const startX = width / 2 - totalWidth / 2;
+        const startPositionX = width / 2 - totalWidth / 2;
 
         levelNodes.forEach((nodeId, index) => {
             nodeMap[nodeId] = {
-                x: startX + index * nodeGap,
-                y: 80 + levelIndex * levelGap
+                x: startPositionX + index * nodeGap,
+                y: 90 + levelIndex * levelGap
             };
         });
     });
@@ -170,6 +245,7 @@ function drawAstTree(astData) {
     edges.forEach(edge => {
         const from = nodeMap[edge.from];
         const to = nodeMap[edge.to];
+
         if (!from || !to) return;
 
         const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -185,6 +261,7 @@ function drawAstTree(astData) {
 
     nodes.forEach(node => {
         const pos = nodeMap[node.id];
+
         if (!pos) return;
 
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -271,6 +348,8 @@ function clearOutputs() {
     elements.astSvg.innerHTML = "";
     elements.symbolTableBody.innerHTML = "";
 
+    resetZoom();
+
     elements.errorCount.innerText = "0";
     elements.warningCount.innerText = "0";
     elements.outputCount.innerText = "0";
@@ -295,6 +374,8 @@ if (a < b) {
 
 updateLineNumbers();
 
+/* BACKGROUND PARTICLES */
+
 const canvas = document.getElementById("bgCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -309,6 +390,7 @@ function resizeCanvas() {
 }
 
 resizeCanvas();
+
 window.addEventListener("resize", resizeCanvas);
 
 window.addEventListener("mousemove", (e) => {
@@ -360,17 +442,14 @@ function animateBackground() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     particles.forEach(p => {
-        let dx = 0;
-        let dy = 0;
-
         if (mouse.x !== null && mouse.y !== null) {
-            dx = p.x - mouse.x;
-            dy = p.y - mouse.y;
+            const dx = p.x - mouse.x;
+            const dy = p.y - mouse.y;
 
             const distance = Math.sqrt(dx * dx + dy * dy);
             const radius = 140;
 
-            if (distance < radius) {
+            if (distance < radius && distance !== 0) {
                 const force = (radius - distance) / radius;
 
                 p.x += (dx / distance) * force * 3;
