@@ -1,4 +1,4 @@
-from ast_nodes import *
+from .ast_nodes import *
 
 def optimize_node(node):
     if isinstance(node, BinOp):

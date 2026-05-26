@@ -1,4 +1,4 @@
-from ast_nodes import *
+from .ast_nodes import *
 
 MAX_ITERATIONS = 1000  
 def eval_expr(node, env):

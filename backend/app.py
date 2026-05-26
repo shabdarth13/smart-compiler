@@ -2,13 +2,13 @@ from flask import Flask, request, jsonify
 from flask import send_from_directory
 from flask_cors import CORS
 
-from lexer import tokenize
-from parser import Parser
-from semantic import semantic_analysis
-from security import security_check
-from optimizer import optimize
-from executor import execute
-from ast_visualizer import visualize_ast
+from .lexer import tokenize
+from .parser import Parser
+from .semantic import semantic_analysis
+from .security import security_check
+from .optimizer import optimize
+from .executor import execute
+from .ast_visualizer import visualize_ast
 
 app = Flask(__name__)
 CORS(app)
