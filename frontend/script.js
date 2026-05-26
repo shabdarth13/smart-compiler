@@ -5,6 +5,7 @@ const elements = {
     output: document.getElementById("output"),
     astSvg: document.getElementById("astSvg"),
     symbols: document.getElementById("symbols"),
+    symbolTableBody: document.getElementById("symbolTableBody"),
     tabs: document.querySelectorAll(".tab"),
     tabContents: document.querySelectorAll(".tab-content")
 };
@@ -76,8 +77,7 @@ async function runCode() {
     renderList(elements.output, data.output);
 
     drawAstTree(data.ast);
-
-    elements.symbols.innerText = JSON.stringify(data.symbols, null, 2);
+    renderSymbolTable(data.symbols);
 
     openTab("output");
 }
@@ -85,6 +85,11 @@ async function runCode() {
 function drawAstTree(astData) {
     const svg = elements.astSvg;
     svg.innerHTML = "";
+
+    if (!astData || !astData.nodes || !astData.edges) {
+        svg.innerHTML = "";
+        return;
+    }
 
     const nodes = astData.nodes;
     const edges = astData.edges;
@@ -97,7 +102,9 @@ function drawAstTree(astData) {
     });
 
     edges.forEach(edge => {
-        childrenMap[edge.from].push(edge.to);
+        if (childrenMap[edge.from]) {
+            childrenMap[edge.from].push(edge.to);
+        }
     });
 
     const root = nodes[0];
@@ -117,12 +124,12 @@ function drawAstTree(astData) {
 
     assignLevels(root.id);
 
-    const width = 1600;
-    const levelGap = 110;
+    const width = Math.max(1400, nodes.length * 140);
+    const levelGap = 120;
     const nodeGap = 170;
 
     svg.setAttribute("width", width);
-    svg.setAttribute("height", levels.length * levelGap + 100);
+    svg.setAttribute("height", levels.length * levelGap + 120);
 
     levels.forEach((levelNodes, levelIndex) => {
         const totalWidth = (levelNodes.length - 1) * nodeGap;
@@ -131,7 +138,7 @@ function drawAstTree(astData) {
         levelNodes.forEach((nodeId, index) => {
             nodeMap[nodeId] = {
                 x: startX + index * nodeGap,
-                y: 60 + levelIndex * levelGap
+                y: 70 + levelIndex * levelGap
             };
         });
     });
@@ -140,12 +147,14 @@ function drawAstTree(astData) {
         const from = nodeMap[edge.from];
         const to = nodeMap[edge.to];
 
+        if (!from || !to) return;
+
         const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
 
         line.setAttribute("x1", from.x);
-        line.setAttribute("y1", from.y + 25);
+        line.setAttribute("y1", from.y + 28);
         line.setAttribute("x2", to.x);
-        line.setAttribute("y2", to.y - 25);
+        line.setAttribute("y2", to.y - 28);
         line.setAttribute("stroke", "#888");
         line.setAttribute("stroke-width", "2");
 
@@ -155,11 +164,13 @@ function drawAstTree(astData) {
     nodes.forEach(node => {
         const pos = nodeMap[node.id];
 
+        if (!pos) return;
+
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
 
         circle.setAttribute("cx", pos.x);
         circle.setAttribute("cy", pos.y);
-        circle.setAttribute("r", "35");
+        circle.setAttribute("r", "40");
         circle.setAttribute("fill", "#007acc");
         circle.setAttribute("stroke", "#ffffff");
         circle.setAttribute("stroke-width", "2");
@@ -172,11 +183,36 @@ function drawAstTree(astData) {
         text.setAttribute("y", pos.y + 5);
         text.setAttribute("text-anchor", "middle");
         text.setAttribute("fill", "white");
-        text.setAttribute("font-size", "12");
+        text.setAttribute("font-size", "11");
 
         text.textContent = node.label;
 
         svg.appendChild(text);
+    });
+}
+
+function renderSymbolTable(symbols) {
+    elements.symbolTableBody.innerHTML = "";
+
+    if (!symbols || Object.keys(symbols).length === 0) {
+        elements.symbolTableBody.innerHTML = `
+            <tr>
+                <td colspan="3" class="empty-symbols">No symbols found</td>
+            </tr>
+        `;
+        return;
+    }
+
+    Object.entries(symbols).forEach(([variable, value]) => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td><span class="var-badge">${variable}</span></td>
+            <td>${value}</td>
+            <td>${typeof value}</td>
+        `;
+
+        elements.symbolTableBody.appendChild(row);
     });
 }
 
@@ -199,8 +235,7 @@ function openTab(id) {
 
     document.getElementById(id).classList.add("active");
 
-    document.querySelector(`.tab[onclick="openTab('${id}')"]`)
-        .classList.add("active");
+    document.querySelector(`.tab[onclick="openTab('${id}')"]`).classList.add("active");
 }
 
 function clearAll() {
@@ -213,7 +248,7 @@ function clearOutputs() {
     elements.warnings.innerHTML = "";
     elements.output.innerHTML = "";
     elements.astSvg.innerHTML = "";
-    elements.symbols.innerText = "";
+    elements.symbolTableBody.innerHTML = "";
 }
 
 function loadSample() {
